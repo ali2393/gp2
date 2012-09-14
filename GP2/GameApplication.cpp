@@ -58,6 +58,53 @@ void CGameApplication::update()
 
 bool CGameApplication::initGraphics()
 {
+	RECT windowRect;
+	GetClientRect(m_pWindow->getHandleToWindow(),&windowRect);
+
+	UINT width=windowRect.right-windowRect.left;
+	UINT height=windowRect.bottom-windowRect.top;
+
+	UINT createDeviceFlags=0;
+
+#ifdef DEBUG
+	createDeviceFlags|=D3D10_CREATE_DEVICE_DEBUG;
+#endif
+
+	DXGI_SWAP_CHAIN_DESC sd;
+	ZeroMemory(&sd,sizeof(sd));
+
+	if (m_pWindow->isFullScreen())
+		sd.BufferCount=2;
+	else
+		sd.BufferCount=1;
+	
+	sd.OutputWindow=m_pWindow->getHandleToWindow();
+	sd.Windowed=(BOOL)(!m_pWindow->isFullScreen());
+	sd.BufferUsage=DXGI_USAGE_RENDER_TARGET_OUTPUT;
+
+	sd.SampleDesc.Count=1;
+	sd.SampleDesc.Quality=0;
+
+	sd.BufferDesc.Width=width;
+	sd.BufferDesc.Height=height;
+	sd.BufferDesc.Format=DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.RefreshRate.Numerator=60;
+	sd.BufferDesc.RefreshRate.Denominator=1;
+
+	if(FAILED(D3D10CreateDeviceAndSwapChain(NULL,D3D10_DRIVER_TYPE_HARDWARE,NULL,createDeviceFlags,D3D10_SDK_VERSION,&sd,&m_pSwapChain,&m_pD3D10Device)))
+		return false;
+
+	ID3D10Texture2D*pBackBuffer;
+	if(FAILED(m_pSwapChain->GetBuffer(0,__uuidof(ID3D10Texture2D),(void**)&pBackBuffer)))
+		return false;
+
+	if(FAILED(m_pD3D10Device->CreateRenderTargetView(pBackBuffer,NULL,&m_pRenderTargetView)))
+	{
+		pBackBuffer->Release();
+		return false;
+	}
+	pBackBuffer->Release();
+
 	return true;
 }
 
