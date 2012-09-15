@@ -20,7 +20,8 @@ CGameApplication::~CGameApplication(void)
 		m_pD3D10Device->ClearState();
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release();
-
+	if(m_pEffect)
+		m_pEffect->Release();
 	if(m_pRenderTargetView)
 		m_pRenderTargetView->Release();
 	if(m_pSwapChain)
@@ -50,6 +51,24 @@ bool CGameApplication::init()
 
 bool CGameApplication::initGame()
 {
+	DWORD dwShaderFlags=D3D10_SHADER_ENABLE_STRICTNESS;
+#if defined(DEBUG)||defined(_DEBUG)
+	dwShaderFlags|=D3D10_SHADER_DEBUG;
+#endif
+
+	if(FAILED(D3DX10CreateEffectFromFile(TEXT("ScreenSpace.fx"),
+		NULL,NULL,"fx_4_0",dwShaderFlags,0,
+		m_pD3D10Device,NULL,NULL,&m_pEffect,
+		NULL,NULL)))
+	{
+		MessageBox(NULL,TEXT("The FX file cannot be located. Please run this executable from the directory that contains the FX file"),
+			TEXT("Error"),
+			MB_OK);
+		return false;
+	}
+
+	m_pTequnique=m_pEffect->GetTechniqueByName("Render");
+
 	D3D10_BUFFER_DESC bd;
 	bd.Usage=D3D10_USAGE_DEFAULT;
 	bd.ByteWidth=sizeof(Vertex)*3;
