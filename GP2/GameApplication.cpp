@@ -1,17 +1,26 @@
 #include "GameApplication.h"
 
+struct Vertex
+{
+	D3DXVECTOR3 pos;
+};
+
 CGameApplication::CGameApplication(void)
 {
 	m_pWindow=NULL;
 	m_pD3D10Device=NULL;
 	m_pRenderTargetView=NULL;
 	m_pSwapChain=NULL;
+	m_pVertexBuffer=NULL;
 }
 
 CGameApplication::~CGameApplication(void)
 {
 	if(m_pD3D10Device)
 		m_pD3D10Device->ClearState();
+	if(m_pVertexBuffer)
+		m_pVertexBuffer->Release();
+
 	if(m_pRenderTargetView)
 		m_pRenderTargetView->Release();
 	if(m_pSwapChain)
@@ -32,6 +41,35 @@ bool CGameApplication::init()
 		return false;
 	if(!initGraphics())
 		return false;
+	if(!initGame())
+		return false;
+	return true;
+}
+
+
+
+bool CGameApplication::initGame()
+{
+	D3D10_BUFFER_DESC bd;
+	bd.Usage=D3D10_USAGE_DEFAULT;
+	bd.ByteWidth=sizeof(Vertex)*3;
+	bd.BindFlags=D3D10_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags=0;
+	bd.MiscFlags=0;
+
+	Vertex vertices[]=
+	{
+		D3DXVECTOR3(0.0f,0.5f,0.5f),
+		D3DXVECTOR3(0.5f,-0.5f,0.5f),
+		D3DXVECTOR3(-0.5f,-0.5f,0.5f)
+	};
+
+	D3D10_SUBRESOURCE_DATA InitData;
+	InitData.pSysMem=vertices;
+
+	if(FAILED(m_pD3D10Device->CreateBuffer(&bd,&InitData,&m_pVertexBuffer)))
+		return false;
+
 	return true;
 }
 
@@ -50,6 +88,13 @@ bool CGameApplication::run()
 
 void CGameApplication::render()
 {
+	
+	float ClearColor[4]={0.0f,0.125f,0.3f,1.0f};
+
+	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView,ClearColor);
+
+	m_pSwapChain->Present(0,0);
+	
 }
 
 void CGameApplication::update()
@@ -104,6 +149,18 @@ bool CGameApplication::initGraphics()
 		return false;
 	}
 	pBackBuffer->Release();
+
+	m_pD3D10Device->OMSetRenderTargets(1,&m_pRenderTargetView,NULL);
+
+	D3D10_VIEWPORT vp;
+	vp.Width=width;
+	vp.Height=height;
+	vp.MinDepth=0.0f;
+	vp.MaxDepth=1.0f;
+	vp.TopLeftX=0;
+	vp.TopLeftY=0;
+	m_pD3D10Device->RSSetViewports(1,&vp);
+
 
 	return true;
 }
