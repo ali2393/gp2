@@ -142,6 +142,13 @@ void CGameApplication::render()
 
 	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView,ClearColor);
 
+	D3D10_TECHNIQUE_DESC techDesc;
+	for(UINT p=0;p<techDesc.Passes;++p)
+	{
+	m_pTechnique->GetPassByIndex(p)->Apply(0);
+	m_pD3D10Device->Draw(3,0);
+	}
+
 	m_pSwapChain->Present(0,0);
 	
 }
