@@ -20,6 +20,8 @@ CGameApplication::~CGameApplication(void)
 		m_pD3D10Device->ClearState();
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release();
+	if(m_pVertexLayout)
+		m_pVertexLayout->Release();
 	if(m_pEffect)
 		m_pEffect->Release();
 	if(m_pRenderTargetView)
@@ -67,7 +69,7 @@ bool CGameApplication::initGame()
 		return false;
 	}
 
-	m_pTequnique=m_pEffect->GetTechniqueByName("Render");
+	m_pTechnique=m_pEffect->GetTechniqueByName("Render");
 
 	D3D10_BUFFER_DESC bd;
 	bd.Usage=D3D10_USAGE_DEFAULT;
@@ -88,6 +90,34 @@ bool CGameApplication::initGame()
 
 	if(FAILED(m_pD3D10Device->CreateBuffer(&bd,&InitData,&m_pVertexBuffer)))
 		return false;
+
+	D3D10_INPUT_ELEMENT_DESC layout[]=
+	{
+		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,
+		D3D10_INPUT_PER_VERTEX_DATA,0},
+	};
+	
+	UINT numElements=sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
+	D3D10_PASS_DESC PassDesc;
+	m_pTechnique->GetPassByIndex(0)->GetDesc(&PassDesc);
+
+	if(FAILED(m_pD3D10Device->CreateInputLayout(layout,
+		numElements,
+		PassDesc.pIAInputSignature,
+		PassDesc.IAInputSignatureSize,
+		&m_pVertexLayout)))
+	{
+		return false;
+	}
+
+	m_pD3D10Device->IASetInputLayout(m_pVertexLayout);
+
+	UINT stride=sizeof(Vertex);
+	UINT offset=0;
+	m_pD3D10Device->IASetVertexBuffers(0,1
+		,&m_pVertexBuffer,&stride,&offset);
+
+	m_pD3D10Device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return true;
 }
