@@ -46,5 +46,8 @@
     <None Include="..\..\..\..\Desktop\ScreenSpace.fx">
       <Filter>Effects</Filter>
     </None>
+    <None Include="ScreenSpace.fx">
+      <Filter>Effects</Filter>
+    </None>
   </ItemGroup>
 </Project>

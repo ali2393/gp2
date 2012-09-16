@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Desktop\ScreenSpace.fx" />
+    <None Include="ScreenSpace.fx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
