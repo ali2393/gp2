@@ -57,14 +57,14 @@ bool CGameApplication::initGame()
 #if defined(DEBUG)||defined(_DEBUG)
 	dwShaderFlags|=D3D10_SHADER_DEBUG;
 #endif
-
+	ID3D10Blob *pErrors=NULL;
 	if(FAILED(D3DX10CreateEffectFromFile(TEXT("ScreenSpace.fx"),
 		NULL,NULL,"fx_4_0",dwShaderFlags,0,
 		m_pD3D10Device,NULL,NULL,&m_pEffect,
-		NULL,NULL)))
+		&pErrors,NULL)))
 	{
-		MessageBox(NULL,TEXT("The FX file cannot be located. Please run this executable from the directory that contains the FX file"),
-			TEXT("Error"),
+		MessageBoxA(NULL,(char*)pErrors->GetBufferPointer(),
+			"error",
 			MB_OK);
 		return false;
 	}
@@ -143,6 +143,7 @@ void CGameApplication::render()
 	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView,ClearColor);
 
 	D3D10_TECHNIQUE_DESC techDesc;
+	m_pTechnique->GetDesc(&techDesc);
 	for(UINT p=0;p<techDesc.Passes;++p)
 	{
 	m_pTechnique->GetPassByIndex(p)->Apply(0);
