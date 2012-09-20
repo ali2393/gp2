@@ -19,7 +19,7 @@
     <Filter Include="Game">
       <UniqueIdentifier>{5e2ceab9-09a0-49cf-94f5-7e2c57779072}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Effects">
+    <Filter Include="Game\Effects">
       <UniqueIdentifier>{e72c07b7-ed22-4b22-829b-d511cd35dfb6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -43,11 +43,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\Desktop\ScreenSpace.fx">
-      <Filter>Effects</Filter>
-    </None>
     <None Include="ScreenSpace.fx">
-      <Filter>Effects</Filter>
+      <Filter>Game\Effects</Filter>
     </None>
   </ItemGroup>
 </Project>
