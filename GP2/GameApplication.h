@@ -36,8 +36,19 @@ private:
 		ID3D10Effect*m_pEffect;
 		ID3D10EffectTechnique*m_pTechnique;
 
+		ID3D10EffectMatrixVariable*m_pWorldMatrixVariable;
+
 		ID3D10EffectMatrixVariable*m_pViewMatrixVariable;
 		ID3D10EffectMatrixVariable*m_pProjectionMatrixVariable;
+
+		D3DXMATRIX m_matWorld;
+		D3DXMATRIX m_matScale;
+		D3DXMATRIX m_matRotation;
+		D3DXMATRIX m_matTranslation;
+
+		D3DXVECTOR3 m_vecPosition;
+		D3DXVECTOR3 m_vecRotation;
+		D3DXVECTOR3 m_vecScale;
 
 		D3DXMATRIX m_matView;
 		D3DXMATRIX m_matProjection;
