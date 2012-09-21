@@ -64,7 +64,7 @@ bool CGameApplication::initGame()
 	dwShaderFlags|=D3D10_SHADER_DEBUG;
 #endif
 	ID3D10Blob *pErrors=NULL;
-	if(FAILED(D3DX10CreateEffectFromFile(TEXT("ScreenSpace.fx"),
+	if(FAILED(D3DX10CreateEffectFromFile(TEXT("Transform.fx"),
 		NULL,NULL,"fx_4_0",dwShaderFlags,0,
 		m_pD3D10Device,NULL,NULL,&m_pEffect,
 		&pErrors,NULL)))
