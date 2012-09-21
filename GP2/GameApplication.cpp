@@ -28,6 +28,10 @@ CGameApplication::~CGameApplication(void)
 		m_pEffect->Release();
 	if(m_pRenderTargetView)
 		m_pRenderTargetView->Release();
+	if(m_pDepthStencilTexture)
+		m_pDepthStencilTexture->Release();
+	if(m_pDepthStencilView)
+		m_pDepthStencilView->Release();
 	if(m_pSwapChain)
 		m_pSwapChain->Release();
 	if(m_pD3D10Device)
@@ -120,6 +124,24 @@ bool CGameApplication::initGame()
 		,&m_pVertexBuffer,&stride,&offset);
 
 	m_pD3D10Device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	D3DXVECTOR3 cameraPos(0.0f,0.0f,-10.0f);
+	D3DXVECTOR3 cameraLook(0.0f,0.0f,1.0f);
+	D3DXVECTOR3 cameraUp(0.0f,1.0f,0.0f);
+	D3DXMatrixLookAtLH(&m_matView,&cameraPos,
+		&cameraLook,&cameraUp);
+
+	D3D10_VIEWPORT vp;
+	UINT numViewPorts=1;
+	m_pD3D10Device->RSGetViewports(&numViewPorts,&vp);
+
+	D3DXMatrixPerspectiveFovLH(&m_matProjection,(float)D3DX_PI*0.25f,
+		vp.Width/(FLOAT)vp.Height,0.1f,100.0f);
+
+	m_pViewMatrixVariable=
+		m_pEffect->GetVariableByName("matView")->AsMatrix();
+	m_pProjectionMatrixVariable=
+		m_pEffect->GetVariableByName("matProjection")->AsMatrix();
 
 	return true;
 }

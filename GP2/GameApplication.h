@@ -35,4 +35,10 @@ private:
 
 		ID3D10Effect*m_pEffect;
 		ID3D10EffectTechnique*m_pTechnique;
+
+		ID3D10EffectMatrixVariable*m_pViewMatrixVariable;
+		ID3D10EffectMatrixVariable*m_pProjectionMatrixVariable;
+
+		D3DXMATRIX m_matView;
+		D3DXMATRIX m_matProjection;
 };
