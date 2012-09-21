@@ -14,20 +14,20 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					LPSTR lpCmdLine,
 					int nCmdShow)
 {
-	CGameApplication*pApp=new CGameApplication();
+	CGameApplication*pApp=new CGameApplication();//Allocates pointer to the GameApplicationClass
 
-	if(!pApp->init())
+	if(!pApp->init())//Checks to see if it can be Initilized
 	{
-		delete pApp;
+		delete pApp;//if it cannot be Initilized delete th epointer
 		pApp=NULL;
 		return 1;
 	}
 
-	pApp->run();
+	pApp->run();//If it can be Initilized call the run function which acts as the game loop
 
 	if(pApp)
 	{
-		delete pApp;
+		delete pApp;//once the game loop is over delete the pointer
 		pApp=NULL;
 	}
 	return 0;

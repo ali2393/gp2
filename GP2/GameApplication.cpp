@@ -5,7 +5,7 @@ struct Vertex
 	D3DXVECTOR3 pos;
 };
 
-CGameApplication::CGameApplication(void)
+CGameApplication::CGameApplication(void) //this is the class constructor. We set every member value to NULL
 {
 	m_pWindow=NULL;
 	m_pD3D10Device=NULL;
@@ -16,12 +16,12 @@ CGameApplication::CGameApplication(void)
 	m_pDepthStencilTexture=NULL;
 }
 
-CGameApplication::~CGameApplication(void)
+CGameApplication::~CGameApplication(void) //this is the deconstructor where we deallocate the resources and realease them from memory, we also delete the window here
 {
 	if(m_pD3D10Device)
-		m_pD3D10Device->ClearState();
+		m_pD3D10Device->ClearState(); //this line dellocates the resources
 	if(m_pVertexBuffer)
-		m_pVertexBuffer->Release();
+		m_pVertexBuffer->Release(); // this calls the release function wich releases the object E.G VertexBuffer from memory
 	if(m_pVertexLayout)
 		m_pVertexLayout->Release();
 	if(m_pEffect)
@@ -44,7 +44,7 @@ CGameApplication::~CGameApplication(void)
 	}
 }
 
-bool CGameApplication::init()
+bool CGameApplication::init() //this function initializes our game
 {
 	if(!initWindow())
 		return false;
@@ -155,7 +155,7 @@ bool CGameApplication::initGame()
 	return true;
 }
 
-bool CGameApplication::run()
+bool CGameApplication::run()//this function will run the while loop untill the window is closed. The while loop checks for windows messages, and update and render the scene if there are none
 {
 	while(m_pWindow->running())
 	{
@@ -168,7 +168,7 @@ bool CGameApplication::run()
 	return false;
 }
 
-void CGameApplication::render()
+void CGameApplication::render() //This function draws to the screen
 {
 	
 	float ClearColor[4]={0.0f,0.125f,0.3f,1.0f};
@@ -194,7 +194,7 @@ void CGameApplication::render()
 	
 }
 
-void CGameApplication::update()
+void CGameApplication::update()// This function is used to update the game state,Ai,Input Devices and physics
 {
 	D3DXMatrixScaling(&m_matScale,m_vecScale.x,m_vecScale.y,m_vecScale.z);
 
@@ -208,51 +208,72 @@ void CGameApplication::update()
 	D3DXMatrixMultiply(&m_matWorld,&m_matWorld,&m_matTranslation);
 }
 
-bool CGameApplication::initGraphics()
+bool CGameApplication::initGraphics()//This function initilizes the Direct3D10
 {
 	RECT windowRect;
-	GetClientRect(m_pWindow->getHandleToWindow(),&windowRect);
+	GetClientRect(m_pWindow->getHandleToWindow(),&windowRect);//Retrives the width and height of the window. These valuse are needed for the creation of the swap chain
 
-	UINT width=windowRect.right-windowRect.left;
-	UINT height=windowRect.bottom-windowRect.top;
+	UINT width=windowRect.right-windowRect.left;//stores the window width in an unsigned int
+	UINT height=windowRect.bottom-windowRect.top;;//stores the window height in an unsigned int
+	
 
-	UINT createDeviceFlags=0;
+	UINT createDeviceFlags=0;//Initilizes a unsigned int that holds the flags for device creation
 
-#ifdef DEBUG
+#ifdef DEBUG //checks to see if development enviroment is in debug mode
 	createDeviceFlags|=D3D10_CREATE_DEVICE_DEBUG;
 #endif
 
-	DXGI_SWAP_CHAIN_DESC sd;
-	ZeroMemory(&sd,sizeof(sd));
+	DXGI_SWAP_CHAIN_DESC sd;//this variable will hold all options for the creation of the swap chain
+	ZeroMemory(&sd,sizeof(sd));//this function takes a memory address of a variable and sets all values in the variable to zero
 
-	if (m_pWindow->isFullScreen())
-		sd.BufferCount=2;
+	if (m_pWindow->isFullScreen())//checks to see if window if fullscreen
+		sd.BufferCount=2;//if it is specify 2 buffers (Front and back bufffers)
 	else
-		sd.BufferCount=1;
+		sd.BufferCount=1;//if not use 1 buffer (Desktop uses as front buffer) 
 	
-	sd.OutputWindow=m_pWindow->getHandleToWindow();
-	sd.Windowed=(BOOL)(!m_pWindow->isFullScreen());
-	sd.BufferUsage=DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.OutputWindow=m_pWindow->getHandleToWindow();//asscoiates window handle with swap chain description
+	sd.Windowed=(BOOL)(!m_pWindow->isFullScreen());//specifies if in windowd mode convert from a boolean to a BOOL (Not modifier used to state if in windowed mode or not)
+	sd.BufferUsage=DXGI_USAGE_RENDER_TARGET_OUTPUT;//says buffer will be used as a render target
 
-	sd.SampleDesc.Count=1;
-	sd.SampleDesc.Quality=0;
+	sd.SampleDesc.Count=1;//sets the Multisampling(antialsing) parameters of swap chain
+	sd.SampleDesc.Quality=0;//there turned off due to performance considerations
 
-	sd.BufferDesc.Width=width;
-	sd.BufferDesc.Height=height;
-	sd.BufferDesc.Format=DXGI_FORMAT_R8G8B8A8_UNORM;
-	sd.BufferDesc.RefreshRate.Numerator=60;
-	sd.BufferDesc.RefreshRate.Denominator=1;
+	//the following block sets the options for the buffers inside the swap chain
+	sd.BufferDesc.Width=width;//sets width of buffer
+	sd.BufferDesc.Height=height;//sets height of buffer
+	sd.BufferDesc.Format=DXGI_FORMAT_R8G8B8A8_UNORM;//set the format of buffer. It has 8bytes for each component(R,G,B,A)
+	sd.BufferDesc.RefreshRate.Numerator=60;//sets refresh rate to 60Hz
+	sd.BufferDesc.RefreshRate.Denominator=1;//Using an update on hte vertical black
 
-	if(FAILED(D3D10CreateDeviceAndSwapChain(NULL,D3D10_DRIVER_TYPE_HARDWARE,NULL,createDeviceFlags,D3D10_SDK_VERSION,&sd,&m_pSwapChain,&m_pD3D10Device)))
+	//The next block contains the function to create the swap chain and device in one call. This is surrounded in a IF and FAILED to check if the function has failed
+	if(FAILED(D3D10CreateDeviceAndSwapChain(
+		NULL,//pointer to IDXGIAdapter.(NULL uses as Default Adaptor)
+		D3D10_DRIVER_TYPE_HARDWARE,//Type of driver flag hardware used as reference is very slow and should only be used for testing
+		NULL,//handle to dynamic link libary(Will be NULL most of the time
+		createDeviceFlags,//Used to give additional options when device is created(Used here to put device into dubug mode)
+		D3D10_SDK_VERSION,//Version of D3D10 used
+		&sd,//pinter to swap chain description.(& used to get pointer) this holds options for swap chain creation
+		&m_pSwapChain,//address of pointer to swap chain interface(This will initialize IDCGISwapChain pointer)
+		&m_pD3D10Device//address of pointer t D3D10Device(This will initilize ID3D10Device pointer)
+		)))
 		return false;
 
+	//this block associates a buffer from swap chain with render targer view using the GetBuffer function of the spawp chain
 	ID3D10Texture2D*pBackBuffer;
-	if(FAILED(m_pSwapChain->GetBuffer(0,__uuidof(ID3D10Texture2D),(void**)&pBackBuffer)))
+	if(FAILED(m_pSwapChain->GetBuffer(
+		0,//index of buffer in swap chain(0 will retrive back buffer)
+		__uuidof(ID3D10Texture2D),//id of type of interface that is being retrieved from swap chain
+		(void**)&pBackBuffer//pointer to address of the buffer
+		)))
 		return false;
 
-	if(FAILED(m_pD3D10Device->CreateRenderTargetView(pBackBuffer,NULL,&m_pRenderTargetView)))
+	//function creates a render target view
+	if(FAILED(m_pD3D10Device->CreateRenderTargetView(pBackBuffer,//contains a pointer to reasource. Texture 2D interface inherits from this reasource so it can be passed as a parameter
+		NULL,//contatins a pointer to structure that defines options for accessing parts of the render target view
+		&m_pRenderTargetView//contains a pointer to address of render target view
+		)))
 	{
-		pBackBuffer->Release();
+		pBackBuffer->Release();//this process allocates memory even if it fails to it must be released
 		return false;
 	}
 	pBackBuffer->Release();
@@ -283,7 +304,11 @@ bool CGameApplication::initGraphics()
 		m_pDepthStencilTexture,&descDSV,&m_pDepthStencilView)))
 		return false;
 
-	m_pD3D10Device->OMSetRenderTargets(1,&m_pRenderTargetView,m_pDepthStencilView);
+	//binds a array of render targets to ouptput merger stage of pipeline
+	m_pD3D10Device->OMSetRenderTargets(1,//specifies the amount of render targets to be bound to the pipeline
+		&m_pRenderTargetView,//pointer to array of render targets
+		m_pDepthStencilView//pointer to depth stencil view
+		);
 
 	D3D10_VIEWPORT vp;
 	vp.Width=width;
@@ -298,9 +323,9 @@ bool CGameApplication::initGraphics()
 	return true;
 }
 
-bool CGameApplication::initWindow()
+bool CGameApplication::initWindow()//This function will Initilize the Win32 Window
 {
-	m_pWindow=new CWin32Window();
+	m_pWindow=new CWin32Window();	//This block of code allocates a new instanse of the win32 Window and calls the init function to create it
 	if(!m_pWindow->init(TEXT("Lab 1-Create Device"),800,640,false))
 		return false;
 
