@@ -12,6 +12,7 @@ CGameApplication::CGameApplication(void) //this is the class constructor. We set
 	m_pRenderTargetView=NULL;
 	m_pSwapChain=NULL;
 	m_pVertexBuffer=NULL;
+	m_pIndexBuffer=NULL;
 	m_pDepthStencilView=NULL;
 	m_pDepthStencilTexture=NULL;
 }
@@ -22,6 +23,8 @@ CGameApplication::~CGameApplication(void) //this is the deconstructor where we d
 		m_pD3D10Device->ClearState(); //this line dellocates the resources
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release(); // this calls the release function wich releases the object E.G VertexBuffer from memory
+	if(m_pIndexBuffer)
+		m_pIndexBuffer->Release();
 	if(m_pVertexLayout)
 		m_pVertexLayout->Release();
 	if(m_pEffect)
@@ -96,6 +99,27 @@ bool CGameApplication::initGame()
 
 	if(FAILED(m_pD3D10Device->CreateBuffer(&bd,&InitData,&m_pVertexBuffer)))
 		return false;
+
+	
+
+	int indices[]={0,1,2};
+
+	D3D10_BUFFER_DESC indexBufferDesc;
+	indexBufferDesc.Usage=D3D10_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth=sizeof(int)*int(indices);
+	indexBufferDesc.BindFlags=D3D10_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags=0;
+	indexBufferDesc.MiscFlags=0;
+
+	D3D10_SUBRESOURCE_DATA IndexBufferInitialData;
+	IndexBufferInitialData.pSysMem=indices;
+
+	if(FAILED(m_pD3D10Device->CreateBuffer(&indexBufferDesc,
+		&IndexBufferInitialData,
+		&m_pIndexBuffer)))
+		return false;
+
+	m_pD3D10Device->IASetIndexBuffer(m_pIndexBuffer,DXGI_FORMAT_R32_UINT,0);
 
 	D3D10_INPUT_ELEMENT_DESC layout[]=
 	{
@@ -187,7 +211,7 @@ void CGameApplication::render() //This function draws to the screen
 	for(UINT p=0;p<techDesc.Passes;++p)
 	{
 	m_pTechnique->GetPassByIndex(p)->Apply(0);
-	m_pD3D10Device->Draw(3,0);
+	m_pD3D10Device->DrawIndexed(3,0,0);
 	}
 
 	m_pSwapChain->Present(0,0);
