@@ -90,11 +90,15 @@ bool CGameApplication::initGame()
 	Vertex vertices[]=
 	{
 		
-		D3DXVECTOR3(0.0f,1.0f,0.0f),
-		D3DXVECTOR3(1.0f,0.0f,0.0f),
-		
-		D3DXVECTOR3(1.0f,1.0f,0.0f),
-		D3DXVECTOR3(0.0f,0.0f,0.0f)
+		D3DXVECTOR3(0.0f,0.0f,0.0f),//0
+		D3DXVECTOR3(0.5f,0.0f,0.0f),//1
+		D3DXVECTOR3(1.0f,0.5f,0.0f),//2
+		D3DXVECTOR3(0.5f,0.5f,0.0f),//3
+		D3DXVECTOR3(0.0f,1.0f,0.0f),//4
+		D3DXVECTOR3(0.5f,1.0f,0.0f),//5
+		D3DXVECTOR3(0.5f,1.5f,0.0f),//6
+		D3DXVECTOR3(1.0f,1.5f,0.0f)//7
+
 		
 	};
 
@@ -106,11 +110,11 @@ bool CGameApplication::initGame()
 
 	
 
-	int indices[]={0,1,2,0,1,3};
+	int indices[]={0,1,4,1,4,5,3,2,6,2,6,7,0,3,4,3,4,6,4,5,6,5,6,7,1,2,5,2,5,7,0,1,3,1,3,2};
 
 	D3D10_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage=D3D10_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth=sizeof(indices)*6;
+	indexBufferDesc.ByteWidth=sizeof(indices)*36;
 	indexBufferDesc.BindFlags=D3D10_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags=0;
 	indexBufferDesc.MiscFlags=0;
@@ -215,7 +219,7 @@ void CGameApplication::render() //This function draws to the screen
 	for(UINT p=0;p<techDesc.Passes;++p)
 	{
 	m_pTechnique->GetPassByIndex(p)->Apply(0);
-	m_pD3D10Device->DrawIndexed(6,0,0);
+	m_pD3D10Device->DrawIndexed(36,0,0);
 	}
 
 	m_pSwapChain->Present(0,0);
