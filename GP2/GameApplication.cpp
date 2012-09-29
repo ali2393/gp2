@@ -91,15 +91,13 @@ bool CGameApplication::initGame()
 	{
 		
 		D3DXVECTOR3(0.0f,0.0f,0.0f),//0
-		D3DXVECTOR3(0.5f,0.0f,0.0f),//1
-		D3DXVECTOR3(1.0f,0.5f,0.0f),//2
-		D3DXVECTOR3(0.5f,0.5f,0.0f),//3
-		D3DXVECTOR3(0.0f,1.0f,0.0f),//4
-		D3DXVECTOR3(0.5f,1.0f,0.0f),//5
-		D3DXVECTOR3(0.5f,1.5f,0.0f),//6
-		D3DXVECTOR3(1.0f,1.5f,0.0f)//7
-
-		
+		D3DXVECTOR3(2.0f,0.0f,0.0f),//1
+		D3DXVECTOR3(0.0f,2.0f,0.0f),//2
+		D3DXVECTOR3(2.0f,2.0f,0.0f),//3
+		D3DXVECTOR3(1.0f,1.0f,1.0f),//4
+		D3DXVECTOR3(3.0f,1.0f,1.0f),//5
+		D3DXVECTOR3(1.0f,3.0f,1.0f),//6
+		D3DXVECTOR3(3.0f,3.0f,1.0f),//7
 	};
 
 	D3D10_SUBRESOURCE_DATA InitData;
@@ -110,7 +108,7 @@ bool CGameApplication::initGame()
 
 	
 
-	int indices[]={0,1,4,1,4,5,3,2,6,2,6,7,0,3,4,3,4,6,4,5,6,5,6,7,1,2,5,2,5,7,0,1,3,1,3,2};
+	int indices[]={0,1,2,1,2,3,4,5,6,5,6,7,2,3,6,3,6,7,2,3,5,3,5,7,0,2,4,2,4,5,0,2,4,2,4,6};
 
 	D3D10_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage=D3D10_USAGE_DEFAULT;
