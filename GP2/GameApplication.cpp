@@ -82,7 +82,7 @@ bool CGameApplication::initGame()
 
 	D3D10_BUFFER_DESC bd;
 	bd.Usage=D3D10_USAGE_DEFAULT;
-	bd.ByteWidth=sizeof(Vertex)*4;
+	bd.ByteWidth=sizeof(Vertex)*8;
 	bd.BindFlags=D3D10_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags=0;
 	bd.MiscFlags=0;
