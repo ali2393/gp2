@@ -94,10 +94,10 @@ bool CGameApplication::initGame()
 		D3DXVECTOR3(2.0f,0.0f,0.0f),//1
 		D3DXVECTOR3(0.0f,2.0f,0.0f),//2
 		D3DXVECTOR3(2.0f,2.0f,0.0f),//3
-		D3DXVECTOR3(1.0f,1.0f,1.0f),//4
-		D3DXVECTOR3(3.0f,1.0f,1.0f),//5
-		D3DXVECTOR3(1.0f,3.0f,1.0f),//6
-		D3DXVECTOR3(3.0f,3.0f,1.0f),//7
+		D3DXVECTOR3(0.0f,0.0f,1.0f),//4
+		D3DXVECTOR3(2.0f,0.0f,1.0f),//5
+		D3DXVECTOR3(0.0f,2.0f,1.0f),//6
+		D3DXVECTOR3(2.0f,2.0f,1.0f),//7
 	};
 
 	D3D10_SUBRESOURCE_DATA InitData;
