@@ -108,7 +108,7 @@ bool CGameApplication::initGame()
 
 	
 
-	int indices[]={0,1,2,1,2,3,4,5,6,5,6,7,2,3,6,3,6,7,2,3,5,3,5,7,0,2,4,2,4,5,0,2,4,2,4,6};
+	int indices[]={2,1,0,2,1,3,6,5,4,6,5,7,3,6,2,3,6,7,1,4,0,1,4,5,3,5,1,3,5,7,2,4,0,2,4,6};
 
 	D3D10_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage=D3D10_USAGE_DEFAULT;
@@ -228,8 +228,8 @@ void CGameApplication::update()// This function is used to update the game state
 {
 	D3DXMatrixScaling(&m_matScale,m_vecScale.x,m_vecScale.y,m_vecScale.z);
 
-	D3DXMatrixRotationYawPitchRoll(&m_matRotation,m_vecRotation.y,
-		m_vecRotation.x,m_vecRotation.z);
+	D3DXMatrixRotationYawPitchRoll(&m_matRotation,m_vecRotation.y+2,
+		m_vecRotation.x+2,m_vecRotation.z);
 
 	D3DXMatrixTranslation(&m_matTranslation,m_vecPosition.x,
 		m_vecPosition.y,m_vecPosition.z);
