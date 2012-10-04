@@ -3,6 +3,7 @@
 struct Vertex
 {
 	D3DXVECTOR3 pos;
+	D3DXVECTOR3 colour;
 };
 
 CGameApplication::CGameApplication(void) //this is the class constructor. We set every member value to NULL
@@ -89,15 +90,14 @@ bool CGameApplication::initGame()
 
 	Vertex vertices[]=
 	{
-		
-		D3DXVECTOR3(0.0f,0.0f,0.0f),//0
-		D3DXVECTOR3(2.0f,0.0f,0.0f),//1
-		D3DXVECTOR3(0.0f,2.0f,0.0f),//2
-		D3DXVECTOR3(2.0f,2.0f,0.0f),//3
-		D3DXVECTOR3(0.0f,0.0f,1.0f),//4
-		D3DXVECTOR3(2.0f,0.0f,1.0f),//5
-		D3DXVECTOR3(0.0f,2.0f,1.0f),//6
-		D3DXVECTOR3(2.0f,2.0f,1.0f),//7
+		{D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f,0.0f,0.0f,1.0f)},
+		{D3DXVECTOR3(2.0f,0.0f,0.0f),D3DXCOLOR(0.0f,1.0f,0.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,2.0f,0.0f),D3DXCOLOR(0.0f,0.0f,1.0f,1.0f)},
+		{D3DXVECTOR3(2.0f,2.0f,0.0f),D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,0.0f,1.0f),D3DXCOLOR(0.0f,1.0f,1.0f,1.0f)},
+		{D3DXVECTOR3(2.0f,0.0f,1.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,2.0f,1.0f),D3DXCOLOR(1.0f,1.0f,1.0f,1.0f)},
+		{D3DXVECTOR3(2.0f,2.0f,1.0f),D3DXCOLOR(0.0f,0.0f,0.0f,1.0f)}
 	};
 
 	D3D10_SUBRESOURCE_DATA InitData;
@@ -130,7 +130,10 @@ bool CGameApplication::initGame()
 	D3D10_INPUT_ELEMENT_DESC layout[]=
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,
-		D3D10_INPUT_PER_VERTEX_DATA,0},
+		D3D10_INPUT_PER_VERTEX_DATA,0,},
+
+		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,12,
+		D3D10_INPUT_PER_VERTEX_DATA,0,}
 	};
 	
 	UINT numElements=sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
@@ -180,7 +183,7 @@ bool CGameApplication::initGame()
 	m_vecScale=D3DXVECTOR3(1.0f,1.0f,1.0f);
 	m_vecRotation=D3DXVECTOR3(0.0f,0.0f,0.0f);
 	m_pWorldMatrixVariable=
-		m_pEffect->GetVariableByName("matWorld")->AsMatrix();
+	m_pEffect->GetVariableByName("matWorld")->AsMatrix();
 
 	return true;
 }

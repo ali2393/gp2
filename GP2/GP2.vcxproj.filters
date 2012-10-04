@@ -49,5 +49,8 @@
     <None Include="Transform.fx">
       <Filter>Game\Effects</Filter>
     </None>
+    <None Include="Transform.fx">
+      <Filter>Game\Effects</Filter>
+    </None>
   </ItemGroup>
 </Project>
