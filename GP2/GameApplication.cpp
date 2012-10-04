@@ -112,7 +112,7 @@ bool CGameApplication::initGame()
 
 	D3D10_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage=D3D10_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth=sizeof(indices)*36;
+	indexBufferDesc.ByteWidth=sizeof(int)*36;
 	indexBufferDesc.BindFlags=D3D10_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags=0;
 	indexBufferDesc.MiscFlags=0;
