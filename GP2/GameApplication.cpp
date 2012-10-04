@@ -4,6 +4,7 @@ struct Vertex
 {
 	D3DXVECTOR3 pos;
 	D3DXVECTOR3 colour;
+	D3DXVECTOR2 texCoords;
 };
 
 CGameApplication::CGameApplication(void) //this is the class constructor. We set every member value to NULL
@@ -68,7 +69,7 @@ bool CGameApplication::initGame()
 	dwShaderFlags|=D3D10_SHADER_DEBUG;
 #endif
 	ID3D10Blob *pErrors=NULL;
-	if(FAILED(D3DX10CreateEffectFromFile(TEXT("Transform.fx"),
+	if(FAILED(D3DX10CreateEffectFromFile(TEXT("texture.fx"),
 		NULL,NULL,"fx_4_0",dwShaderFlags,0,
 		m_pD3D10Device,NULL,NULL,&m_pEffect,
 		&pErrors,NULL)))
@@ -90,14 +91,14 @@ bool CGameApplication::initGame()
 
 	Vertex vertices[]=
 	{
-		{D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f,0.0f,0.0f,1.0f)},
-		{D3DXVECTOR3(2.0f,0.0f,0.0f),D3DXCOLOR(0.0f,1.0f,0.0f,1.0f)},
-		{D3DXVECTOR3(0.0f,2.0f,0.0f),D3DXCOLOR(0.0f,0.0f,1.0f,1.0f)},
-		{D3DXVECTOR3(2.0f,2.0f,0.0f),D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)},
-		{D3DXVECTOR3(0.0f,0.0f,1.0f),D3DXCOLOR(0.0f,1.0f,1.0f,1.0f)},
-		{D3DXVECTOR3(2.0f,0.0f,1.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f)},
-		{D3DXVECTOR3(0.0f,2.0f,1.0f),D3DXCOLOR(1.0f,1.0f,1.0f,1.0f)},
-		{D3DXVECTOR3(2.0f,2.0f,1.0f),D3DXCOLOR(0.0f,0.0f,0.0f,1.0f)}
+		{D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},
+		{D3DXVECTOR3(2.0f,0.0f,0.0f),D3DXCOLOR(0.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,2.0f,0.0f),D3DXCOLOR(0.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,1.0f)},
+		{D3DXVECTOR3(2.0f,2.0f,0.0f),D3DXCOLOR(1.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,0.0f,1.0f),D3DXCOLOR(0.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},
+		{D3DXVECTOR3(2.0f,0.0f,1.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,2.0f,1.0f),D3DXCOLOR(1.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,1.0f)},
+		{D3DXVECTOR3(2.0f,2.0f,1.0f),D3DXCOLOR(0.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
 	};
 
 	D3D10_SUBRESOURCE_DATA InitData;
@@ -133,7 +134,12 @@ bool CGameApplication::initGame()
 		D3D10_INPUT_PER_VERTEX_DATA,0,},
 
 		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,12,
-		D3D10_INPUT_PER_VERTEX_DATA,0,}
+		D3D10_INPUT_PER_VERTEX_DATA,0,},
+
+		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,28,
+		D3D10_INPUT_PER_VERTEX_DATA,0},
+
+
 	};
 	
 	UINT numElements=sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
