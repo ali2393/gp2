@@ -19,7 +19,7 @@
     <Filter Include="Game">
       <UniqueIdentifier>{5e2ceab9-09a0-49cf-94f5-7e2c57779072}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Effects">
+    <Filter Include="Effects">
       <UniqueIdentifier>{e72c07b7-ed22-4b22-829b-d511cd35dfb6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -44,16 +44,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ScreenSpace.fx">
-      <Filter>Game\Effects</Filter>
+      <Filter>Effects</Filter>
     </None>
     <None Include="Transform.fx">
-      <Filter>Game\Effects</Filter>
+      <Filter>Effects</Filter>
     </None>
     <None Include="Transform.fx">
       <Filter>Game\Effects</Filter>
     </None>
     <None Include="texture.fx">
-      <Filter>Game\Effects</Filter>
+      <Filter>Effects</Filter>
     </None>
   </ItemGroup>
 </Project>

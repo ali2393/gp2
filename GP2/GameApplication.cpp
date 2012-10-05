@@ -17,12 +17,15 @@ CGameApplication::CGameApplication(void) //this is the class constructor. We set
 	m_pIndexBuffer=NULL;
 	m_pDepthStencilView=NULL;
 	m_pDepthStencilTexture=NULL;
+	m_pDiffuseTexture=NULL;
 }
 
 CGameApplication::~CGameApplication(void) //this is the deconstructor where we deallocate the resources and realease them from memory, we also delete the window here
 {
 	if(m_pD3D10Device)
 		m_pD3D10Device->ClearState(); //this line dellocates the resources
+	if(m_pDiffuseTexture)
+		m_pDiffuseTexture->Release();
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release(); // this calls the release function wich releases the object E.G VertexBuffer from memory
 	if(m_pIndexBuffer)
@@ -41,6 +44,7 @@ CGameApplication::~CGameApplication(void) //this is the deconstructor where we d
 		m_pSwapChain->Release();
 	if(m_pD3D10Device)
 		m_pD3D10Device->Release();
+
 
 	if(m_pWindow)
 	{
@@ -80,6 +84,8 @@ bool CGameApplication::initGame()
 		return false;
 	}
 
+	
+
 	m_pTechnique=m_pEffect->GetTechniqueByName("Render");
 
 	D3D10_BUFFER_DESC bd;
@@ -91,14 +97,14 @@ bool CGameApplication::initGame()
 
 	Vertex vertices[]=
 	{
-		{D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},
-		{D3DXVECTOR3(2.0f,0.0f,0.0f),D3DXCOLOR(0.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
-		{D3DXVECTOR3(0.0f,2.0f,0.0f),D3DXCOLOR(0.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,1.0f)},
-		{D3DXVECTOR3(2.0f,2.0f,0.0f),D3DXCOLOR(1.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
-		{D3DXVECTOR3(0.0f,0.0f,1.0f),D3DXCOLOR(0.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},
-		{D3DXVECTOR3(2.0f,0.0f,1.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
-		{D3DXVECTOR3(0.0f,2.0f,1.0f),D3DXCOLOR(1.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,1.0f)},
-		{D3DXVECTOR3(2.0f,2.0f,1.0f),D3DXCOLOR(0.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(1.0f,1.0f)},
+		{D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(0.0f,3.0f)},//0
+		{D3DXVECTOR3(2.0f,0.0f,0.0f),D3DXCOLOR(0.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(3.0f,3.0f)},//1
+		{D3DXVECTOR3(0.0f,2.0f,0.0f),D3DXCOLOR(0.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},//2
+		{D3DXVECTOR3(2.0f,2.0f,0.0f),D3DXCOLOR(1.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(3.0f,0.0f)},//3
+		{D3DXVECTOR3(0.0f,0.0f,2.0f),D3DXCOLOR(0.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,3.0f)},//4
+		{D3DXVECTOR3(2.0f,0.0f,2.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(3.0f,3.0f)},//5
+		{D3DXVECTOR3(0.0f,2.0f,2.0f),D3DXCOLOR(1.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},//6
+		{D3DXVECTOR3(2.0f,2.0f,2.0f),D3DXCOLOR(0.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(3.0f,0.0f)},//7
 	};
 
 	D3D10_SUBRESOURCE_DATA InitData;
@@ -191,7 +197,14 @@ bool CGameApplication::initGame()
 	m_pWorldMatrixVariable=
 	m_pEffect->GetVariableByName("matWorld")->AsMatrix();
 
-	return true;
+	if(FAILED(D3DX10CreateShaderResourceViewFromFile(m_pD3D10Device,
+		TEXT("face.png"),NULL,NULL,&m_pDiffuseTexture,NULL)))
+	{
+		MessageBox(NULL,TEXT("Can't load Texture"),TEXT("ERROR"),MB_OK);
+		return false;
+	}
+
+	m_pDiffuseTextureVariable=m_pEffect->GetVariableByName("diffuseTexture")->AsShaderResource();	return true;
 }
 
 bool CGameApplication::run()//this function will run the while loop untill the window is closed. The while loop checks for windows messages, and update and render the scene if there are none
@@ -221,6 +234,8 @@ void CGameApplication::render() //This function draws to the screen
 
 	m_pWorldMatrixVariable->SetMatrix((float*)m_matWorld);
 
+	m_pDiffuseTextureVariable->SetResource(m_pDiffuseTexture);
+
 	D3D10_TECHNIQUE_DESC techDesc;
 	m_pTechnique->GetDesc(&techDesc);
 	for(UINT p=0;p<techDesc.Passes;++p)
@@ -237,14 +252,18 @@ void CGameApplication::update()// This function is used to update the game state
 {
 	D3DXMatrixScaling(&m_matScale,m_vecScale.x,m_vecScale.y,m_vecScale.z);
 
-	D3DXMatrixRotationYawPitchRoll(&m_matRotation,m_vecRotation.y+2,
-		m_vecRotation.x+2,m_vecRotation.z);
+	D3DXMatrixRotationYawPitchRoll(&m_matRotation,m_vecRotation.y,
+		m_vecRotation.x,m_vecRotation.z);
 
 	D3DXMatrixTranslation(&m_matTranslation,m_vecPosition.x,
 		m_vecPosition.y,m_vecPosition.z);
 
 	D3DXMatrixMultiply(&m_matWorld,&m_matScale,&m_matRotation);
 	D3DXMatrixMultiply(&m_matWorld,&m_matWorld,&m_matTranslation);
+
+	//m_vecRotation.x+=0.0001f;
+	m_vecRotation.y+=0.0001f;
+	//m_vecRotation.z+=0.0001f;
 }
 
 bool CGameApplication::initGraphics()//This function initilizes the Direct3D10
