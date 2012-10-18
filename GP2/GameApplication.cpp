@@ -1,340 +1,297 @@
 #include "GameApplication.h"
+#include "GameObject.h"
 
-struct Vertex
-{
-	D3DXVECTOR3 pos;
-	D3DXVECTOR3 colour;
-	D3DXVECTOR2 texCoords;
-};
+#include "ModelLoader.h"
+#include "Input.h"
+#include "Keyboard.h"
 
-CGameApplication::CGameApplication(void) //this is the class constructor. We set every member value to NULL
+CGameApplication::CGameApplication(void)
 {
 	m_pWindow=NULL;
 	m_pD3D10Device=NULL;
 	m_pRenderTargetView=NULL;
 	m_pSwapChain=NULL;
-	m_pVertexBuffer=NULL;
-	m_pIndexBuffer=NULL;
-	m_pDepthStencilView=NULL;
+	m_pDepthStencelView=NULL;
 	m_pDepthStencilTexture=NULL;
-	m_pDiffuseTexture=NULL;
+	m_pGameObjectManager=new CGameObjectManager();
 }
 
-CGameApplication::~CGameApplication(void) //this is the deconstructor where we deallocate the resources and realease them from memory, we also delete the window here
+CGameApplication::~CGameApplication(void)
 {
-	if(m_pD3D10Device)
-		m_pD3D10Device->ClearState(); //this line dellocates the resources
-	if(m_pDiffuseTexture)
-		m_pDiffuseTexture->Release();
-	if(m_pVertexBuffer)
-		m_pVertexBuffer->Release(); // this calls the release function wich releases the object E.G VertexBuffer from memory
-	if(m_pIndexBuffer)
-		m_pIndexBuffer->Release();
-	if(m_pVertexLayout)
-		m_pVertexLayout->Release();
-	if(m_pEffect)
-		m_pEffect->Release();
-	if(m_pRenderTargetView)
+	if (m_pD3D10Device)
+		m_pD3D10Device->ClearState();
+
+	if (m_pGameObjectManager)
+	{
+		delete m_pGameObjectManager;
+		m_pGameObjectManager=NULL;
+	}
+
+	if (m_pRenderTargetView)
 		m_pRenderTargetView->Release();
-	if(m_pDepthStencilTexture)
+	if (m_pDepthStencelView)
+		m_pDepthStencelView->Release();
+	if (m_pDepthStencilTexture)
 		m_pDepthStencilTexture->Release();
-	if(m_pDepthStencilView)
-		m_pDepthStencilView->Release();
-	if(m_pSwapChain)
+	if (m_pSwapChain)
 		m_pSwapChain->Release();
-	if(m_pD3D10Device)
+	if (m_pD3D10Device)
 		m_pD3D10Device->Release();
-
-
-	if(m_pWindow)
+	if (m_pWindow)
 	{
 		delete m_pWindow;
 		m_pWindow=NULL;
 	}
 }
 
-bool CGameApplication::init() //this function initializes our game
+bool CGameApplication::init()
 {
-	if(!initWindow())
+	if (!initWindow())
 		return false;
-	if(!initGraphics())
+	if (!initGraphics())
 		return false;
-	if(!initGame())
+	if (!initInput())
+		return false;
+	if (!initGame())
 		return false;
 	return true;
 }
 
-
-
 bool CGameApplication::initGame()
 {
-	DWORD dwShaderFlags=D3D10_SHADER_ENABLE_STRICTNESS;
-#if defined(DEBUG)||defined(_DEBUG)
-	dwShaderFlags|=D3D10_SHADER_DEBUG;
-#endif
-	ID3D10Blob *pErrors=NULL;
-	if(FAILED(D3DX10CreateEffectFromFile(TEXT("texture.fx"),
-		NULL,NULL,"fx_4_0",dwShaderFlags,0,
-		m_pD3D10Device,NULL,NULL,&m_pEffect,
-		&pErrors,NULL)))
-	{
-		MessageBoxA(NULL,(char*)pErrors->GetBufferPointer(),
-			"error",
-			MB_OK);
-		return false;
-	}
+    // Set primitive topology, how are we going to interpet the vertices in the vertex buffer - BMD
+    //http://msdn.microsoft.com/en-us/library/bb173590%28v=VS.85%29.aspx - BMD
+    m_pD3D10Device->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );	
 
+	//Create Game Object
+	CGameObject *pTestGameObject=new CGameObject();
+	//Set the name
+	pTestGameObject->setName("Test");
 	
-
-	m_pTechnique=m_pEffect->GetTechniqueByName("Render");
-
-	D3D10_BUFFER_DESC bd;
-	bd.Usage=D3D10_USAGE_DEFAULT;
-	bd.ByteWidth=sizeof(Vertex)*8;
-	bd.BindFlags=D3D10_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags=0;
-	bd.MiscFlags=0;
-
-	Vertex vertices[]=
-	{
-		{D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(0.0f,3.0f)},//0
-		{D3DXVECTOR3(2.0f,0.0f,0.0f),D3DXCOLOR(0.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(3.0f,3.0f)},//1
-		{D3DXVECTOR3(0.0f,2.0f,0.0f),D3DXCOLOR(0.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},//2
-		{D3DXVECTOR3(2.0f,2.0f,0.0f),D3DXCOLOR(1.0f,0.0f,1.0f,1.0f),D3DXVECTOR2(3.0f,0.0f)},//3
-		{D3DXVECTOR3(0.0f,0.0f,2.0f),D3DXCOLOR(0.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,3.0f)},//4
-		{D3DXVECTOR3(2.0f,0.0f,2.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f),D3DXVECTOR2(3.0f,3.0f)},//5
-		{D3DXVECTOR3(0.0f,2.0f,2.0f),D3DXCOLOR(1.0f,1.0f,1.0f,1.0f),D3DXVECTOR2(0.0f,0.0f)},//6
-		{D3DXVECTOR3(2.0f,2.0f,2.0f),D3DXCOLOR(0.0f,0.0f,0.0f,1.0f),D3DXVECTOR2(3.0f,0.0f)},//7
-	};
-
-	D3D10_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem=vertices;
-
-	if(FAILED(m_pD3D10Device->CreateBuffer(&bd,&InitData,&m_pVertexBuffer)))
-		return false;
-
+	//create material
+	CMaterialComponent *pMaterial=new CMaterialComponent();
+	pMaterial->SetRenderingDevice(m_pD3D10Device);
+	pMaterial->loadDiffuseTexture("face.png");
+	pMaterial->setEffectFilename("Transform.fx");
 	
+	//Create geometry
+	CModelLoader modelloader;
+	//CGeometryComponent *pGeometry=modelloader.loadModelFromFile(m_pD3D10Device,"humanoid.fbx");
+	CGeometryComponent *pGeometry=modelloader.createCube(m_pD3D10Device,2.0f,2.0f,2.0f);
+	pGeometry->SetRenderingDevice(m_pD3D10Device);
 
-	int indices[]={2,1,0,2,1,3,6,5,4,6,5,7,3,6,2,3,6,7,1,4,0,1,4,5,3,5,1,3,5,7,2,4,0,2,4,6};
+	CGameObject *pCameraGameObject=new CGameObject();
+	pCameraGameObject->getTransform()->setPosition(0.0f,0.0f,0.0f);
+	pCameraGameObject->setName("Camera");
 
-	D3D10_BUFFER_DESC indexBufferDesc;
-	indexBufferDesc.Usage=D3D10_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth=sizeof(int)*36;
-	indexBufferDesc.BindFlags=D3D10_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags=0;
-	indexBufferDesc.MiscFlags=0;
-
-	D3D10_SUBRESOURCE_DATA IndexBufferInitialData;
-	IndexBufferInitialData.pSysMem=indices;
-
-	if(FAILED(m_pD3D10Device->CreateBuffer(&indexBufferDesc,
-		&IndexBufferInitialData,
-		&m_pIndexBuffer)))
-		return false;
-
-	m_pD3D10Device->IASetIndexBuffer(m_pIndexBuffer,DXGI_FORMAT_R32_UINT,0);
-
-	D3D10_INPUT_ELEMENT_DESC layout[]=
-	{
-		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,
-		D3D10_INPUT_PER_VERTEX_DATA,0,},
-
-		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,12,
-		D3D10_INPUT_PER_VERTEX_DATA,0,},
-
-		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,28,
-		D3D10_INPUT_PER_VERTEX_DATA,0},
-
-
-	};
-	
-	UINT numElements=sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
-	D3D10_PASS_DESC PassDesc;
-	m_pTechnique->GetPassByIndex(0)->GetDesc(&PassDesc);
-
-	if(FAILED(m_pD3D10Device->CreateInputLayout(layout,
-		numElements,
-		PassDesc.pIAInputSignature,
-		PassDesc.IAInputSignatureSize,
-		&m_pVertexLayout)))
-	{
-		return false;
-	}
-
-	m_pD3D10Device->IASetInputLayout(m_pVertexLayout);
-
-	UINT stride=sizeof(Vertex);
-	UINT offset=0;
-	m_pD3D10Device->IASetVertexBuffers(0,1
-		,&m_pVertexBuffer,&stride,&offset);
-
-	m_pD3D10Device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	D3DXVECTOR3 cameraPos(0.0f,0.0f,-10.0f);
-	D3DXVECTOR3 cameraLook(0.0f,0.0f,1.0f);
-	D3DXVECTOR3 cameraUp(0.0f,1.0f,0.0f);
-	D3DXMatrixLookAtLH(&m_matView,&cameraPos,
-		&cameraLook,&cameraUp);
 
 	D3D10_VIEWPORT vp;
-	UINT numViewPorts=1;
-	m_pD3D10Device->RSGetViewports(&numViewPorts,&vp);
+	UINT numViewports=1;
+	m_pD3D10Device->RSGetViewports(&numViewports,&vp);
 
-	D3DXMatrixPerspectiveFovLH(&m_matProjection,(float)D3DX_PI*0.25f,
-		vp.Width/(FLOAT)vp.Height,0.1f,100.0f);
+	CCameraComponent *pCamera=new CCameraComponent();
+	pCamera->setUp(0.0f,1.0f,0.0f);
+	pCamera->setLookAt(0.0f,0.0f,0.0f);
+	pCamera->setFOV(D3DX_PI*0.25f);
+	pCamera->setAspectRatio((float)(vp.Width/vp.Height));
+	pCamera->setFarClip(1000.0f);
+	pCamera->setNearClip(0.1f);
 
-	m_pViewMatrixVariable=
-		m_pEffect->GetVariableByName("matView")->AsMatrix();
-	m_pProjectionMatrixVariable=
-		m_pEffect->GetVariableByName("matProjection")->AsMatrix();
+	pCameraGameObject->addComponent(pCamera);
+	pCameraGameObject->getTransform()->setPosition(0.0f,0.0f,-5.0f);
 
-	m_pProjectionMatrixVariable->SetMatrix((float*)m_matProjection);
+	//Add component
+	pTestGameObject->addComponent(pMaterial);
+	pTestGameObject->addComponent(pGeometry);
+	//add the game object
+	m_pGameObjectManager->addGameObject(pTestGameObject);
+	m_pGameObjectManager->addGameObject(pCameraGameObject);
 
-
-	m_vecPosition=D3DXVECTOR3(0.0f,0.0f,0.0f);
-	m_vecScale=D3DXVECTOR3(1.0f,1.0f,1.0f);
-	m_vecRotation=D3DXVECTOR3(0.0f,0.0f,0.0f);
-	m_pWorldMatrixVariable=
-	m_pEffect->GetVariableByName("matWorld")->AsMatrix();
-
-	if(FAILED(D3DX10CreateShaderResourceViewFromFile(m_pD3D10Device,
-		TEXT("face.png"),NULL,NULL,&m_pDiffuseTexture,NULL)))
-	{
-		MessageBox(NULL,TEXT("Can't load Texture"),TEXT("ERROR"),MB_OK);
-		return false;
-	}
-
-	m_pDiffuseTextureVariable=m_pEffect->GetVariableByName("diffuseTexture")->AsShaderResource();	return true;
+	//init
+	m_pGameObjectManager->init();
+	
+	m_Timer.start();
+	return true;
 }
 
-bool CGameApplication::run()//this function will run the while loop untill the window is closed. The while loop checks for windows messages, and update and render the scene if there are none
+void CGameApplication::run()
 {
 	while(m_pWindow->running())
 	{
-		if(!m_pWindow->checkForWindowMessages())
+		if (! m_pWindow->checkForWindowMessages())
 		{
 			update();
 			render();
 		}
 	}
-	return false;
 }
 
-void CGameApplication::render() //This function draws to the screen
+void CGameApplication::render()
 {
-	
-	float ClearColor[4]={0.0f,0.125f,0.3f,1.0f};
-
-	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView,ClearColor);
-
-	m_pD3D10Device->ClearDepthStencilView(m_pDepthStencilView,
-		D3D10_CLEAR_DEPTH,1.0f,0);
-
-	m_pViewMatrixVariable->SetMatrix((float*)m_matView);
-
-	m_pWorldMatrixVariable->SetMatrix((float*)m_matWorld);
-
-	m_pDiffuseTextureVariable->SetResource(m_pDiffuseTexture);
-
-	D3D10_TECHNIQUE_DESC techDesc;
-	m_pTechnique->GetDesc(&techDesc);
-	for(UINT p=0;p<techDesc.Passes;++p)
+    // Just clear the backbuffer, colours start at 0.0 to 1.0
+	// Red, Green , Blue, Alpha - BMD
+    float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; 
+	//Clear the Render Target
+	//http://msdn.microsoft.com/en-us/library/bb173539%28v=vs.85%29.aspx - BMD
+    m_pD3D10Device->ClearRenderTargetView( m_pRenderTargetView, ClearColor );
+	m_pD3D10Device->ClearDepthStencilView(m_pDepthStencelView,D3D10_CLEAR_DEPTH,1.0f,0);
+	//We need to iterate through all the Game Objects in the managers
+	for(vector<CGameObject*>::iterator iter=m_pGameObjectManager->getBegining();iter!=m_pGameObjectManager->getEnd();iter++)
 	{
-	m_pTechnique->GetPassByIndex(p)->Apply(0);
-	m_pD3D10Device->DrawIndexed(36,0,0);
+		//grab the transform
+		CTransformComponent *pTransform=(*iter)->getTransform();
+		//and the geometry
+		CGeometryComponent *pGeometry=static_cast<CGeometryComponent*>((*iter)->getComponent("GeometryComponent"));
+		//and the material
+		CMaterialComponent *pMaterial=static_cast<CMaterialComponent*>((*iter)->getComponent("MaterialComponent"));
+
+		//if we have a valid geometry
+		if (pGeometry)
+		{
+			//bind the buffer
+			pGeometry->bindBuffers();
+		}
+		//do we have a matrial
+		if (pMaterial)
+		{
+			//set the matrices
+			pMaterial->setProjectionMatrix((float*)m_pGameObjectManager->getMainCamera()->getProjection());
+			pMaterial->setViewMatrix((float*)m_pGameObjectManager->getMainCamera()->getView());
+			pMaterial->setWorldMatrix((float*)pTransform->getWorld());
+			pMaterial->setTextures();
+			//bind the vertex layout
+			pMaterial->bindVertexLayout();
+			//loop for the passes in the material
+			for (UINT i=0;i<pMaterial->getNumberOfPasses();i++)
+			{
+				//Apply the current pass
+				pMaterial->applyPass(i);
+				//we have a geometry
+				if (pGeometry)
+				{
+					//draw from the geometry
+					m_pD3D10Device->DrawIndexed(pGeometry->getNumberOfIndices(),0,0);
+				}
+			}
+		}
+
+	}
+	//Swaps the buffers in the chain, the back buffer to the front(screen)
+	//http://msdn.microsoft.com/en-us/library/bb174576%28v=vs.85%29.aspx - BMD
+    m_pSwapChain->Present( 0, 0 );
+}
+
+void CGameApplication::update()
+{
+	m_Timer.update();
+
+	if (CInput::getInstance().getKeyboard()->isKeyDown((int)'A'))
+	{
+		//play sound
+		CTransformComponent * pTransform=m_pGameObjectManager->findGameObject("Test")->getTransform();
+		pTransform->rotate(m_Timer.getElapsedTime(),0.0f,0.0f);
 	}
 
-	m_pSwapChain->Present(0,0);
+	m_pGameObjectManager->update(m_Timer.getElapsedTime());
+
+	
 	
 }
 
-void CGameApplication::update()// This function is used to update the game state,Ai,Input Devices and physics
+bool CGameApplication::initInput()
 {
-	D3DXMatrixScaling(&m_matScale,m_vecScale.x,m_vecScale.y,m_vecScale.z);
-
-	D3DXMatrixRotationYawPitchRoll(&m_matRotation,m_vecRotation.y,
-		m_vecRotation.x,m_vecRotation.z);
-
-	D3DXMatrixTranslation(&m_matTranslation,m_vecPosition.x,
-		m_vecPosition.y,m_vecPosition.z);
-
-	D3DXMatrixMultiply(&m_matWorld,&m_matScale,&m_matRotation);
-	D3DXMatrixMultiply(&m_matWorld,&m_matWorld,&m_matTranslation);
-
-	//m_vecRotation.x+=0.0001f;
-	m_vecRotation.y+=0.0001f;
-	//m_vecRotation.z+=0.0001f;
+	CInput::getInstance().init();
+	return true;
 }
 
-bool CGameApplication::initGraphics()//This function initilizes the Direct3D10
+
+//initGraphics - initialise the graphics subsystem - BMD
+bool CGameApplication::initGraphics()
 {
+	//Retrieve the size of the window, this is need to match the
+	//back buffer to screen size - BMD
 	RECT windowRect;
-	GetClientRect(m_pWindow->getHandleToWindow(),&windowRect);//Retrives the width and height of the window. These valuse are needed for the creation of the swap chain
+	//http://msdn.microsoft.com/en-us/library/ms633503%28v=vs.85%29.aspx -BMD
+	GetClientRect(m_pWindow->getHandleToWindow(),&windowRect);
 
-	UINT width=windowRect.right-windowRect.left;//stores the window width in an unsigned int
-	UINT height=windowRect.bottom-windowRect.top;;//stores the window height in an unsigned int
-	
+	//Calculate the width and height of the window - BMD
+	UINT width=windowRect.right-windowRect.left;
+	UINT height=windowRect.bottom-windowRect.top;
 
-	UINT createDeviceFlags=0;//Initilizes a unsigned int that holds the flags for device creation
-
-#ifdef DEBUG //checks to see if development enviroment is in debug mode
+	//Device creation flags, used to control our the D3D10 device is created
+	UINT createDeviceFlags=0;
+	//If we are in a debug build then set the device creation flag to debug device
+#ifdef _DEBUG
 	createDeviceFlags|=D3D10_CREATE_DEVICE_DEBUG;
 #endif
 
-	DXGI_SWAP_CHAIN_DESC sd;//this variable will hold all options for the creation of the swap chain
-	ZeroMemory(&sd,sizeof(sd));//this function takes a memory address of a variable and sets all values in the variable to zero
+	//Swap Chain description - used in the creation of the swap chain
+	//http://msdn.microsoft.com/en-us/library/bb173075%28v=vs.85%29.aspx - BMD
 
-	if (m_pWindow->isFullScreen())//checks to see if window if fullscreen
-		sd.BufferCount=2;//if it is specify 2 buffers (Front and back bufffers)
-	else
-		sd.BufferCount=1;//if not use 1 buffer (Desktop uses as front buffer) 
+	//Initialise the swap chain description by setting all its values to zero - BMD
+	DXGI_SWAP_CHAIN_DESC sd;
+	//http://msdn.microsoft.com/en-us/library/aa366920%28v=vs.85%29.aspx - BMD
+    ZeroMemory( &sd, sizeof( sd ) );
+	//What kind of surface is contained in the swap chain, in this case something we draw too
+	//http://msdn.microsoft.com/en-us/library/bb173078%28v=vs.85%29.aspx - BMD
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	//Number of buffers, if we are not full screen this will be one as the desktop
+	//acts as a front buffer. If we are in full screen this will be one - BMD
+	if (m_pWindow->isFullScreen())
+		sd.BufferCount = 2;
+	else 
+		sd.BufferCount=1;
+	//The handle of the window which this swap chain is linked to, this must not be NULL - BMD
+	sd.OutputWindow = m_pWindow->getHandleToWindow();
+	//Are we in windowed mode, arggh opposite of full screen
+	sd.Windowed = (BOOL)(!m_pWindow->isFullScreen());
+	//Multisampling(antialsing) parameters for the swap chain - this has performance considerations - see remarks in docs
+	//http://msdn.microsoft.com/en-us/library/bb173072%28v=vs.85%29.aspx - BMD
+    sd.SampleDesc.Count = 1;
+    sd.SampleDesc.Quality = 0;
+	//The description of the swap chain buffer
+	//http://msdn.microsoft.com/en-us/library/bb173064%28v=vs.85%29.aspx - BMD
+	//width & height of the buffer - this matches the size of the window - BMD
+    sd.BufferDesc.Width = width;
+    sd.BufferDesc.Height = height;
+	//The data format of the buffer in the swap chain, 8bits used for Red, green, blue & alpha - unsigned int(UNIFORM) - BMD
+	//http://msdn.microsoft.com/en-us/library/bb173059%28v=vs.85%29.aspx
+    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//Refresh rate of the buffer in the swap chain - BMD
+    sd.BufferDesc.RefreshRate.Numerator = 60;
+    sd.BufferDesc.RefreshRate.Denominator = 1;
 	
-	sd.OutputWindow=m_pWindow->getHandleToWindow();//asscoiates window handle with swap chain description
-	sd.Windowed=(BOOL)(!m_pWindow->isFullScreen());//specifies if in windowd mode convert from a boolean to a BOOL (Not modifier used to state if in windowed mode or not)
-	sd.BufferUsage=DXGI_USAGE_RENDER_TARGET_OUTPUT;//says buffer will be used as a render target
+	//NB. You should get use to seeing patterns like this when programming with D3D10 
+	//where we use a description object which is then used in the creation of a D3D10 resource 
+	//like swap chains. Also in a real application we would check to see if some of the above
+	//options are support by the graphics hardware. -BMD
 
-	sd.SampleDesc.Count=1;//sets the Multisampling(antialsing) parameters of swap chain
-	sd.SampleDesc.Quality=0;//there turned off due to performance considerations
-
-	//the following block sets the options for the buffers inside the swap chain
-	sd.BufferDesc.Width=width;//sets width of buffer
-	sd.BufferDesc.Height=height;//sets height of buffer
-	sd.BufferDesc.Format=DXGI_FORMAT_R8G8B8A8_UNORM;//set the format of buffer. It has 8bytes for each component(R,G,B,A)
-	sd.BufferDesc.RefreshRate.Numerator=60;//sets refresh rate to 60Hz
-	sd.BufferDesc.RefreshRate.Denominator=1;//Using an update on hte vertical black
-
-	//The next block contains the function to create the swap chain and device in one call. This is surrounded in a IF and FAILED to check if the function has failed
-	if(FAILED(D3D10CreateDeviceAndSwapChain(
-		NULL,//pointer to IDXGIAdapter.(NULL uses as Default Adaptor)
-		D3D10_DRIVER_TYPE_HARDWARE,//Type of driver flag hardware used as reference is very slow and should only be used for testing
-		NULL,//handle to dynamic link libary(Will be NULL most of the time
-		createDeviceFlags,//Used to give additional options when device is created(Used here to put device into dubug mode)
-		D3D10_SDK_VERSION,//Version of D3D10 used
-		&sd,//pinter to swap chain description.(& used to get pointer) this holds options for swap chain creation
-		&m_pSwapChain,//address of pointer to swap chain interface(This will initialize IDCGISwapChain pointer)
-		&m_pD3D10Device//address of pointer t D3D10Device(This will initilize ID3D10Device pointer)
-		)))
+	//Create D3D10 Device and swap chain 
+	//http://msdn.microsoft.com/en-us/library/bb205087%28v=vs.85%29.aspx - BMD
+	if (FAILED(D3D10CreateDeviceAndSwapChain(NULL, //Pointer to IDXGIAdpater, this is a display adapater on the machine this can be NULL - BMD
+		D3D10_DRIVER_TYPE_HARDWARE,//Type of Driver we have, it can be a hardware device, refrence(slow) or Software(not supported yet) - BMD
+		NULL, //Handle to a module that implements a software rasterizer - BMD
+		createDeviceFlags,//The device creation flags we used earlier on - BMD
+		D3D10_SDK_VERSION,//The version of the SDK we are using this should D3D10 - BMD
+		&sd,//The memory address of the swap chain description - BMD
+		&m_pSwapChain, //The memory address of the swap chain pointer, if all goes well this will be intialised after this function call - BMD
+		&m_pD3D10Device)))//the memory address of the D3D10 Device, if all goes well this will be initialised after this function call - BMD
 		return false;
 
-	//this block associates a buffer from swap chain with render targer view using the GetBuffer function of the spawp chain
-	ID3D10Texture2D*pBackBuffer;
-	if(FAILED(m_pSwapChain->GetBuffer(
-		0,//index of buffer in swap chain(0 will retrive back buffer)
-		__uuidof(ID3D10Texture2D),//id of type of interface that is being retrieved from swap chain
-		(void**)&pBackBuffer//pointer to address of the buffer
-		)))
-		return false;
+	//NB. There are two ways of creating the device, the above way which initialises the device and swap chain at the sametime
+	// or we can create a swap chain and a device seperatly and then associate a swap chain with a device. - BMD
 
-	//function creates a render target view
-	if(FAILED(m_pD3D10Device->CreateRenderTargetView(pBackBuffer,//contains a pointer to reasource. Texture 2D interface inherits from this reasource so it can be passed as a parameter
-		NULL,//contatins a pointer to structure that defines options for accessing parts of the render target view
-		&m_pRenderTargetView//contains a pointer to address of render target view
-		)))
-	{
-		pBackBuffer->Release();//this process allocates memory even if it fails to it must be released
+	//Create a render target, this is a Texture which will hold our backbuffer, this will
+	//enable us to link the rendertarget with buffer held in the swap chain - BMD
+	ID3D10Texture2D *pBackBuffer;
+	//Get a buffer from the swap chain 
+	//http://msdn.microsoft.com/en-us/library/bb174570%28v=vs.85%29.aspx - BMD
+	if (FAILED(m_pSwapChain->GetBuffer(0, //buffer index, 0 will get the back buffer
+		__uuidof(ID3D10Texture2D),//The unique identifier of the type of pointer we want in
+								  //this case a I3D10 Texture2D
+		(void**)&pBackBuffer)))//A pointer to a memory address, this is cast to a void ** because this function
+							   //can return back different types dependent on the 2nd param
 		return false;
-	}
-	pBackBuffer->Release();
 
 	D3D10_TEXTURE2D_DESC descDepth;
 	descDepth.Width=width;
@@ -349,8 +306,7 @@ bool CGameApplication::initGraphics()//This function initilizes the Direct3D10
 	descDepth.CPUAccessFlags=0;
 	descDepth.MiscFlags=0;
 
-	if(FAILED(m_pD3D10Device->CreateTexture2D(&descDepth,
-		NULL,&m_pDepthStencilTexture)))
+	if (FAILED(m_pD3D10Device->CreateTexture2D(&descDepth,NULL,&m_pDepthStencilTexture)))
 		return false;
 
 	D3D10_DEPTH_STENCIL_VIEW_DESC descDSV;
@@ -358,35 +314,50 @@ bool CGameApplication::initGraphics()//This function initilizes the Direct3D10
 	descDSV.ViewDimension=D3D10_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice=0;
 
-	if(FAILED(m_pD3D10Device->CreateDepthStencilView(
-		m_pDepthStencilTexture,&descDSV,&m_pDepthStencilView)))
+	if (FAILED(m_pD3D10Device->CreateDepthStencilView(m_pDepthStencilTexture,&descDSV,&m_pDepthStencelView)))
 		return false;
 
-	//binds a array of render targets to ouptput merger stage of pipeline
-	m_pD3D10Device->OMSetRenderTargets(1,//specifies the amount of render targets to be bound to the pipeline
-		&m_pRenderTargetView,//pointer to array of render targets
-		m_pDepthStencilView//pointer to depth stencil view
-		);
 
-	D3D10_VIEWPORT vp;
-	vp.Width=width;
-	vp.Height=height;
-	vp.MinDepth=0.0f;
-	vp.MaxDepth=1.0f;
-	vp.TopLeftX=0;
-	vp.TopLeftY=0;
-	m_pD3D10Device->RSSetViewports(1,&vp);
+	//Create the Render Target View, a view is the way we access D3D10 resources
+	//http://msdn.microsoft.com/en-us/library/bb173556%28v=vs.85%29.aspx - BMD
+	if (FAILED(m_pD3D10Device->CreateRenderTargetView( pBackBuffer, //The resource we are creating the view for - BMD
+		NULL, //The description of the view, in this case NULL - BMD
+		&m_pRenderTargetView ))) // the memory address of a pointer to D3D10 Render Target - BMD
+	{
+		
+		pBackBuffer->Release();
+		return  false;
+	}
+	//The above Get Buffer call will allocate some memory, we now need to release it. - BMD
+    pBackBuffer->Release();
 
+	//Binds one or more render targets and depth buffer to the Output merger stage - BMD
+	//http://msdn.microsoft.com/en-us/library/bb173597%28v=vs.85%29.aspx - BMD
+	m_pD3D10Device->OMSetRenderTargets(1, //Number  of views - BMD
+		&m_pRenderTargetView, //pointer to an array of D3D10 Render Target Views - BMD
+		m_pDepthStencelView); //point to Depth Stencil buffer - BMD
+
+    // Setup the viewport 
+	//http://msdn.microsoft.com/en-us/library/bb172500%28v=vs.85%29.aspx - BMD
+    D3D10_VIEWPORT vp;
+    vp.Width = width;
+    vp.Height = height;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+	//Sets the Viewport 
+	//http://msdn.microsoft.com/en-us/library/bb173613%28v=vs.85%29.aspx - BMD
+    m_pD3D10Device->RSSetViewports( 1 //Number of viewports to bind
+		, &vp );//an array of viewports
 
 	return true;
 }
 
-bool CGameApplication::initWindow()//This function will Initilize the Win32 Window
+bool CGameApplication::initWindow()
 {
-	m_pWindow=new CWin32Window();	//This block of code allocates a new instanse of the win32 Window and calls the init function to create it
-	if(!m_pWindow->init(TEXT("Lab 1-Create Device"),800,640,false))
+	m_pWindow=new CWin32Window();
+	if (!m_pWindow->init(TEXT("Lab 1 - Triangle"),800,640,false))
 		return false;
-
 	return true;
 }
-
