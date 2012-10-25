@@ -187,7 +187,6 @@ void CGameApplication::update()
 
 	if (CInput::getInstance().getKeyboard()->isKeyDown((int)'A'))
 	{
-		//play sound
 		CTransformComponent * pTransform=m_pGameObjectManager->findGameObject("Test")->getTransform();
 		pTransform->rotate(m_Timer.getElapsedTime(),0.0f,0.0f);
 	}
