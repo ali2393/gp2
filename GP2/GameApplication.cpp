@@ -72,9 +72,11 @@ bool CGameApplication::initGame()
 	//create material
 	CMaterialComponent *pMaterial=new CMaterialComponent();
 	pMaterial->SetRenderingDevice(m_pD3D10Device);
-	pMaterial->setEffectFilename("Specular.fx");
+	pMaterial->setEffectFilename("DirctionaLight.fx");
 	pMaterial->setAmbientMaterialColour(D3DXCOLOR(0.5f,0.5f,0.5f,1.0f));
 	pTestGameObject->addComponent(pMaterial);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//Create Mesh
 	CMeshComponent *pMesh=modelloader.loadModelFromFile(m_pD3D10Device,"armoredrecon.fbx");
@@ -83,6 +85,25 @@ bool CGameApplication::initGame()
 	pTestGameObject->addComponent(pMesh);
 	//add the game object
 	m_pGameObjectManager->addGameObject(pTestGameObject);
+
+	CGameObject *pFirstGameObject=new CGameObject();//creates the object
+	pFirstGameObject->setName("first");//names the object
+	pFirstGameObject->getTransform()->setPosition(1.0f,1.0f,1.0f);//postitions the object
+	
+	pMaterial=new CMaterialComponent();
+	pMaterial->SetRenderingDevice(m_pD3D10Device);
+	pMaterial->setEffectFilename("Specular.fx");
+	pMaterial->setAmbientMaterialColour(D3DXCOLOR(0.5f,0.5f,0.5f,1.0f));
+	pFirstGameObject->addComponent(pMaterial);
+
+	pMesh=modelloader.loadModelFromFile(m_pD3D10Device,"armoredrecon.fbx");
+	//CMeshComponent *pMesh=modelloader.createCube(m_pD3D10Device,10.0f,10.0f,10.0f);
+	pMesh->SetRenderingDevice(m_pD3D10Device);
+	pFirstGameObject->addComponent(pMesh);
+
+	m_pGameObjectManager->addGameObject(pFirstGameObject);
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	CGameObject *pCameraGameObject=new CGameObject();
 	pCameraGameObject->getTransform()->setPosition(0.0f,0.0f,-5.0f);
