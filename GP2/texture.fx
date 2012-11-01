@@ -5,18 +5,14 @@ float4x4 matProjection:PROJECTION;
 struct VS_INPUT
 {
 	float4 pos:POSITION;
-	
 	float4 colour:COLOR;
-	
 	float2 texCoord:TEXCOORD0;
 };
 
 struct PS_INPUT
 {
 	float4 pos:SV_POSITION;
-	
 	float4 colour:COLOR;
-	
 	float2 texCoord:TEXCOORD0;
 };
 
@@ -27,21 +23,18 @@ PS_INPUT VS(VS_INPUT input)
 	float4x4 matViewProjection=mul(matView,matProjection);
 	float4x4 matWorldViewProjection=mul(matWorld,matViewProjection);
 	
-	output.colour=input.colour;
-	
-	output.texCoord=input.texCoord;
-	
 	output.pos=mul(input.pos,matWorldViewProjection);
+	output.colour=input.colour;
+	output.texCoord=input.texCoord;
 	return output;
 }
 
 Texture2D diffuseTexture;
-
 SamplerState diffuseSampler
 {
-	Filter=MIN_MAG_LINEAR_MIP_POINT;
-	AddressU=CLAMP;
-	AddressV=CLAMP;
+    Filter = MIN_MAG_LINEAR_MIP_POINT;
+    AddressU = Wrap;
+    AddressV = Wrap;
 };
 
 float4 PS(PS_INPUT input):SV_TARGET
@@ -51,16 +44,16 @@ float4 PS(PS_INPUT input):SV_TARGET
 
 RasterizerState DisableCulling
 {
-	CullMode=NONE;
+    CullMode = NONE;
 };
 
 technique10 Render
 {
 	pass P0
 	{
-		SetVertexShader(CompileShader(vs_4_0, VS()));
-		SetGeometryShader(NULL);
-		SetPixelShader(CompileShader(ps_4_0,PS()));
-		SetRasterizerState(DisableCulling);
+		SetVertexShader(CompileShader(vs_4_0, VS() ) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader( ps_4_0,  PS() ) );
+		SetRasterizerState(DisableCulling); 
 	}
 }
