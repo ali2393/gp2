@@ -45,9 +45,6 @@
     <ClCompile Include="Win32Window.cpp">
       <Filter>Window</Filter>
     </ClCompile>
-    <ClCompile Include="GameApplication.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Timer</Filter>
     </ClCompile>
@@ -81,13 +78,25 @@
     <ClCompile Include="Mouse.cpp">
       <Filter>Input</Filter>
     </ClCompile>
+    <ClCompile Include="DirectionalLightComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LightComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameApplication.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win32Window.h">
       <Filter>Window</Filter>
-    </ClInclude>
-    <ClInclude Include="GameApplication.h">
-      <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Timer</Filter>
@@ -128,6 +137,27 @@
     <ClInclude Include="Mouse.h">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="DefaultEffect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionLightComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LightComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameApplication.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ScreenSpace.fx">
@@ -140,6 +170,15 @@
       <Filter>Game\Effects</Filter>
     </None>
     <None Include="texture.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="ambient.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="Specular.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="diffuse.fx">
       <Filter>Effects</Filter>
     </None>
   </ItemGroup>
