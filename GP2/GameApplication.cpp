@@ -72,7 +72,7 @@ bool CGameApplication::initGame()
 	//create material
 	CMaterialComponent *pMaterial=new CMaterialComponent();
 	pMaterial->SetRenderingDevice(m_pD3D10Device);
-	pMaterial->setEffectFilename("DirctionaLight.fx");
+	pMaterial->setEffectFilename("DirectionaLight.fx");
 	pMaterial->setAmbientMaterialColour(D3DXCOLOR(0.5f,0.5f,0.5f,1.0f));
 	pTestGameObject->addComponent(pMaterial);
 

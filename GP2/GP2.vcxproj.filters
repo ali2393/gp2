@@ -181,8 +181,14 @@
     <None Include="diffuse.fx">
       <Filter>Effects</Filter>
     </None>
-    <None Include="Bumpmapping.fx" />
-    <None Include="DirectionalLight.fx" />
-    <None Include="Parallax.fx" />
+    <None Include="Parallax.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="Bumpmapping.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="DirectionalLight.fx">
+      <Filter>Effects</Filter>
+    </None>
   </ItemGroup>
 </Project>
